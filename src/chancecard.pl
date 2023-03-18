@@ -2,9 +2,9 @@
     Jenis Kartu                     | Probabilitas  | Deskripsi
     - Kartu Tax                     |       20%     | Pemain akan ditempatkan ke tempat tax terdekat 
     - Kartu Hadiah                  |               | Pemain mendapatkan uang dengan nominal tertentu
-            S 50                    |       10%     |
-            S 100                   |       7,5%    |
-            S 200                   |       2,5%    |
+            S 1000                  |       10%     |
+            S 1500                  |       7,5%    |
+            S 2000                  |       2,5%    |
     - Kartu Get out from Jail       |       15%     | Pemain mendapatkan kesempatan untuk tidak masuk penjara
     - Kartu Go to Jail              |       20%     | Pemain langsung dimasukkan ke penjara
     - Kartu Go to World Tour        |       15%     | Pemain langsung ditempatkan kepada petak World Tour
@@ -18,9 +18,9 @@
 
 /* Fakta Kartu */
 card('Go To Tax').
-card('Free $50').
-card('Free $100').
-card('Free $200').
+card('Free $1000').
+card('Free $1500').
+card('Free $2000').
 card('Get Out From Jail').
 card('Go To Jail').
 card('Go To World Tour').
@@ -31,9 +31,9 @@ card('Instant Win').
 indexCard('Instant Win', 1).
 indexCard('Angel Card', 2).
 indexCard('Go To Tax', 3).
-indexCard('Free $50', 4).
-indexCard('Free $100', 5).
-indexCard('Free $200', 6).
+indexCard('Free $1000', 4).
+indexCard('Free $1500', 5).
+indexCard('Free $2000', 6).
 indexCard('Get Out From Jail', 7).
 indexCard('Go To Jail', 8).
 indexCard('Go To World Tour', 9).
@@ -62,7 +62,7 @@ calculateRandomChance(Money, Round, Result) :- NewRound is Round - 1 , calculate
 /* Fakta */
 
 /* Rules */
-getCCIndex(Money1, Round, Result) :- calculateRandomChance(Money, Round, RandInt), 
+getCCIndex(Money, Round, Result) :- Int is round(Money), RandInt is 700, 
                                         (RandInt = 777, Result is 1; 
                                         RandInt >= 750, RandInt =< 799, Result is 2;
                                         RandInt >= 700, RandInt =< 749, Result is 10;
@@ -75,21 +75,69 @@ getCCIndex(Money1, Round, Result) :- calculateRandomChance(Money, Round, RandInt
                                         RandInt >= 800, RandInt =< 999, Result is 8),!.
 
 
+/* calculateRandomChance(Int, Round, RandInt) */
+
+/* Ascii Art untuk kartu */
+/* Fakta */
+
+/* Rules */
+asciiCard :-    write('         ______________________________'), nl,
+                write('       _|____________________________  |'), nl,
+                write('      |                              | |'), nl,
+                write('      |         ____________         | |'), nl,
+                write('      |        |  ________  |        | |'), nl,
+                write('      |       |  |        |  |       | |'), nl,
+                write('      |      |  |          |  |      | |'), nl,
+                write('      |      |_|            | |      | |'), nl,
+                write('      |                   _|  |      | |'), nl,
+                write('      |                 _|  _|       | |'), nl,
+                write('      |               _|  _|         | |'), nl,
+                write('      |              |  _|           | |'), nl,
+                write('      |             |  |             | |'), nl,
+                write('      |             | |              | |'), nl,
+                write('      |             |_|              | |'), nl,
+                write('      |              _               | |'), nl,
+                write('      |             |_|              | |'), nl,
+                write('      |                              |_|'), nl,
+                write('      |______________________________|  '), nl.
+
 /* Mengeluarkan kartu */
 /* Fakta */ 
 
 /* Rules */
 /* Val yang dimasukkan pada fungsi ini adalah Val yang didapat menggunakan fungsi getCCIndex */
 getChanceCard(Money, Round, _Card) :- 
-            write('================================================================'), nl,
-            write('================================================================'), nl,
-            write('========                 GACHA TIME                     ========'), nl,
-            write('================================================================'), nl,
-            write('================================================================'), nl,
-
+            write('===================================================='), nl,
+            write('========            CHANCE CARD             ========'), nl,
+            write('===================================================='), nl,
+            asciiCard,
             getCCIndex(Money, Round, _Index), indexCard(_Card, _Index),
-            write(''), nl, write('Anda mendapatkan : '), write(_Card), !.
+            write(''), nl, write('Anda mendapatkan : '), write(_Card),nl, !.
 
+/* Melakukan inisiasi Chance Card yang dimiliki player */
+initPlayerTemp :- asserta(player1('A','CC',_,_)).
+
+/* Menambahkan Chance Card pada List */
+/* Fakta */
+appendList( [], X, X).                 
+/* Rules */                 
+appendList( [X | Y], Z, [X | W]) :- append( Y, Z, W).  
+
+/* Menambahkan Chance Card untuk player 1 */
+addChanceCardPlayer1(Card) :- 
+                        retract(player1(ID1,Loc1,Money1,List1)),appendList(List1,[Card],List2),
+                        asserta(player1(ID1,Loc1,Money1,List2)).
+
+/* Menambahkan Chance Card untuk player 2 */
+addChanceCardPlayer2(Card) :- 
+                        retract(player2(ID1,Loc1,Money1,List1)),appendList(List1,[Card],List2),
+                        asserta(player2(ID1,Loc1,Money1,List2)).
+
+/* Menambahkan Chance Card untuk player tertentu */
+addChanceCard(Card,X) :-
+                cekPlayerTurn(X),
+                (X == 1, addChanceCardPlayer1(Card);
+                X == 2, addChanceCardPlayer2(Card)).
 
 
 /* 
